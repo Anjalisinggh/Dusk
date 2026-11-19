@@ -1,0 +1,401 @@
+/* =========================================================
+   Dusk. Hero mode ("light"): a Manhattan rooftop at 7:42 pm,
+   navy sky, red horizon, lit windows, a web in the corner.
+   Symbiote mode ("dark"): the same roof at 3:12 am, black,
+   cold fog, tendrils taking the edges.
+   ========================================================= */
+:root,
+:root[data-theme="light"] {
+  --sky-top: #0c1430;
+  --sky-mid: #22306a;
+  --sky-low: #9c3b3c;
+  --horizon: #ef9a58;
+  --sun: rgba(239, 120, 70, 0.55);
+  --city-far: #2c3560;
+  --city-mid: #181e40;
+  --city-near: #07091a;
+  --window: #f6c177;
+  --fog: rgba(239, 154, 88, 0.16);
+  --fog-near: rgba(34, 48, 106, 0.35);
+  --web: rgba(226, 232, 245, 0.26);
+  --tendril: #030306;
+  --tendril-edge: rgba(120, 140, 210, 0.16);
+  --particle: 246, 193, 119;
+  --fg: #f6f2ec;
+  --mute: rgba(246, 242, 236, 0.7);
+  --accent: #e23b2e;
+  --glow: rgba(226, 59, 46, 0.42);
+  --tendril-reach: 0.5;
+  --web-on: 1;
+  color-scheme: dark;
+}
+:root[data-theme="dark"] {
+  --sky-top: #010102;
+  --sky-mid: #040507;
+  --sky-low: #0a0c12;
+  --horizon: #161a26;
+  --sun: rgba(160, 176, 215, 0.12);
+  --city-far: #0a0b10;
+  --city-mid: #06070a;
+  --city-near: #020203;
+  --window: rgba(150, 170, 215, 0.35);
+  --fog: rgba(150, 165, 205, 0.1);
+  --fog-near: rgba(0, 0, 0, 0.55);
+  --web: rgba(226, 232, 245, 0);
+  --tendril: #0b0d14;
+  --tendril-edge: rgba(190, 205, 240, 0.16);
+  --particle: 214, 224, 245;
+  --fg: #eef1f6;
+  --mute: rgba(238, 241, 246, 0.62);
+  --accent: #eef1f6;
+  --glow: rgba(180, 196, 235, 0.2);
+  --tendril-reach: 1;
+  --web-on: 0;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--sky-top);
+  color: var(--fg);
+}
+body {
+  font-family: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
+  font-stretch: 100%;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 6px;
+}
+
+/* ---------- the scene ---------- */
+.scene {
+  position: relative;
+  height: 100svh;
+  min-height: 520px;
+  overflow: hidden;
+  isolation: isolate;
+}
+.scene > * {
+  position: absolute;
+}
+.layer {
+  transform: translate3d(calc(var(--mx, 0) * var(--depth, 0) * -1px), calc(var(--my, 0) * var(--depth, 0) * -0.6px), 0);
+  will-change: transform;
+}
+
+.sky {
+  inset: 0;
+  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 42%, var(--sky-low) 72%, var(--horizon) 100%);
+}
+/* the last of the sun (or the moon behind cloud) sitting low behind the towers */
+.sun {
+  left: 50%;
+  bottom: 8%;
+  width: 120vmax;
+  height: 70vmax;
+  margin-left: -60vmax;
+  background: radial-gradient(closest-side, var(--sun), transparent 70%);
+}
+
+.skyline {
+  inset: 0;
+  pointer-events: none;
+}
+.skyline__row {
+  position: absolute;
+  left: -40px;
+  right: -40px;
+  bottom: -10px;
+  width: calc(100% + 80px);
+  height: 62%;
+}
+.skyline__row:nth-child(2) {
+  height: 50%;
+}
+.skyline__row--near {
+  height: 38%;
+}
+.skyline__windows {
+  opacity: 0.9;
+}
+
+/* ---------- fog ---------- */
+.fog {
+  inset: -10% -20%;
+  pointer-events: none;
+  animation: drift 46s ease-in-out infinite alternate;
+}
+.fog--far {
+  background:
+    radial-gradient(60% 22% at 30% 72%, var(--fog), transparent 70%),
+    radial-gradient(50% 18% at 78% 64%, var(--fog), transparent 70%);
+}
+.fog--near {
+  background:
+    radial-gradient(70% 26% at 60% 100%, var(--fog-near), transparent 70%),
+    radial-gradient(40% 16% at 10% 92%, var(--fog), transparent 70%);
+  animation-duration: 34s;
+  animation-direction: alternate-reverse;
+}
+@keyframes drift {
+  from {
+    transform: translate3d(-4%, 0, 0);
+  }
+  to {
+    transform: translate3d(4%, -1.5%, 0);
+  }
+}
+
+/* ---------- web (Hero only) ---------- */
+.web {
+  top: -2px;
+  left: -2px;
+  width: min(62vmin, 620px);
+  height: auto;
+  fill: none;
+  stroke: var(--web);
+  stroke-width: 1.1;
+  opacity: var(--web-on);
+  transition: opacity 1.6s ease;
+  pointer-events: none;
+}
+
+/* ---------- tendrils ---------- */
+.tendrils {
+  inset: 0;
+  pointer-events: none;
+}
+.tendrils svg {
+  position: absolute;
+  overflow: visible;
+}
+.tendrils__side {
+  top: 0;
+  height: 100%;
+  width: min(42vw, 46vh);
+}
+.tendrils__side--left {
+  left: 0;
+}
+.tendrils__side--right {
+  right: 0;
+  transform: scaleX(-1);
+}
+.tendrils__bottom {
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 26%;
+}
+.tendril {
+  fill: var(--tendril);
+  stroke: var(--tendril-edge);
+  stroke-width: 1.2;
+  /* Hero: the symbiote is only creeping in. Symbiote: it owns the edges. */
+  scale: var(--tendril-reach);
+  transition: scale 2.4s cubic-bezier(0.6, 0, 0.2, 1), fill 1s;
+  animation: sway 9s ease-in-out infinite alternate;
+}
+/* the left side stays thinner in Hero mode so the frame is lopsided: the dark side is to the right */
+.tendrils__side--left .tendril {
+  scale: calc(var(--tendril-reach) * 0.8);
+}
+@keyframes sway {
+  from {
+    rotate: -2.5deg;
+  }
+  to {
+    rotate: 2.5deg;
+  }
+}
+
+.particles {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.vignette {
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+/* ---------- words ---------- */
+.top {
+  top: env(safe-area-inset-top, 0px);
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 22px max(24px, env(safe-area-inset-right, 0px)) 0 max(24px, env(safe-area-inset-left, 0px));
+  font-size: 13px;
+  color: var(--mute);
+  z-index: 5;
+}
+.top__mark {
+  font-weight: 800;
+  font-stretch: 125%;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  color: var(--fg);
+}
+.top__clock {
+  font-variant-numeric: tabular-nums;
+}
+
+.hero {
+  left: max(24px, env(safe-area-inset-left, 0px));
+  right: max(24px, env(safe-area-inset-right, 0px));
+  bottom: calc(max(28px, env(safe-area-inset-bottom, 0px)) + 2vh);
+  z-index: 4;
+  pointer-events: none;
+}
+.hero__title {
+  margin: 0;
+  display: grid;
+  font-weight: 900;
+  font-stretch: 125%;
+  text-transform: uppercase;
+  font-size: clamp(40px, min(8.4vw, 13svh), 150px);
+  line-height: 0.9;
+  letter-spacing: -0.015em;
+  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.35);
+}
+/* Hero: the second line is only an outline. Symbiote: it fills in. */
+.hero__line--outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--fg);
+  text-shadow: none;
+  transition: color 1.6s ease;
+}
+:root[data-theme="dark"] .hero__line--outline {
+  color: var(--fg);
+}
+.hero__sub {
+  margin: 18px 0 0;
+  font-size: clamp(15px, 1.4vw, 19px);
+  font-weight: 400;
+  color: var(--mute);
+}
+
+.hero__orb {
+  z-index: 6;
+  right: clamp(24px, 9vw, 180px);
+  top: 50%;
+  translate: 0 -62%;
+}
+.orb {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+}
+.orb::before {
+  /* light pooling behind the orb: red at dusk, cold at night */
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  width: 190%;
+  aspect-ratio: 1;
+  translate: -50% -58%;
+  background: radial-gradient(closest-side, var(--glow), transparent 72%);
+  pointer-events: none;
+}
+.orb__button {
+  position: relative;
+  width: clamp(170px, 30vmin, 340px);
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.orb__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.orb__button--flat {
+  background: radial-gradient(circle at 35% 30%, #3a3f52, #050507 55%);
+  box-shadow: 0 0 0 1px var(--tendril-edge);
+}
+.orb__caption {
+  margin: 0;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  text-align: center;
+}
+.orb__mode {
+  font-weight: 800;
+  font-stretch: 125%;
+  text-transform: uppercase;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: var(--fg);
+}
+.orb__hint {
+  font-size: 13px;
+  color: var(--mute);
+}
+
+/* ---------- phones ---------- */
+@media (max-width: 760px) {
+  .hero__orb {
+    right: auto;
+    left: 50%;
+    top: 40%;
+    translate: -50% -50%;
+  }
+  .orb__button {
+    width: min(56vw, 34svh);
+  }
+  .hero__title {
+    font-size: clamp(34px, 11.4vw, 64px);
+  }
+  .tendrils__side {
+    width: 34vw;
+  }
+}
+@media (max-height: 560px) and (orientation: landscape) {
+  .orb__button {
+    width: 44svh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fog,
+  .tendril {
+    animation: none;
+  }
+  .layer {
+    transform: none;
+  }
+}
+
+/* ---------- venom ink transition (driven from ThemeProvider) ---------- */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  z-index: 2;
+  mask: url(#ink-mask);
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
