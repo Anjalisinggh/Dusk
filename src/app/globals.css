@@ -1,388 +1,351 @@
 /* =========================================================
-   Dusk. Hero mode ("light"): a Manhattan rooftop at 7:42 pm,
-   navy sky, red horizon, lit windows, a web in the corner.
-   Symbiote mode ("dark"): the same roof at 3:12 am, black,
-   cold fog, tendrils taking the edges.
+   Dusk. One 3D city, two hours.
+   "light" is 7:42 pm: the sun at the end of the avenue.
+   "dark" is 3:12 am: moonlight, lit windows, wet streets.
+   The scene sits fixed behind the page; the words ride over it.
    ========================================================= */
 :root,
 :root[data-theme="light"] {
-  --sky-top: #0c1430;
-  --sky-mid: #22306a;
-  --sky-low: #9c3b3c;
-  --horizon: #ef9a58;
-  --sun: rgba(239, 120, 70, 0.55);
-  --city-far: #2c3560;
-  --city-mid: #181e40;
-  --city-near: #07091a;
-  --window: #f6c177;
-  --fog: rgba(239, 154, 88, 0.16);
-  --fog-near: rgba(34, 48, 106, 0.35);
-  --web: rgba(226, 232, 245, 0.26);
-  --tendril: #030306;
-  --tendril-edge: rgba(120, 140, 210, 0.16);
-  --particle: 246, 193, 119;
-  --fg: #f6f2ec;
-  --mute: rgba(246, 242, 236, 0.7);
-  --accent: #e23b2e;
-  --glow: rgba(226, 59, 46, 0.42);
-  --tendril-reach: 0.5;
-  --web-on: 1;
+  --base: #6e6470; /* shown until the scene has drawn */
+  --fg: #fbf6ee;
+  --mute: rgba(251, 246, 238, 0.82);
+  --line: rgba(251, 246, 238, 0.55);
+  --shade: 18, 10, 14; /* tint of the scrims behind text */
   color-scheme: dark;
 }
 :root[data-theme="dark"] {
-  --sky-top: #010102;
-  --sky-mid: #040507;
-  --sky-low: #0a0c12;
-  --horizon: #161a26;
-  --sun: rgba(160, 176, 215, 0.12);
-  --city-far: #0a0b10;
-  --city-mid: #06070a;
-  --city-near: #020203;
-  --window: rgba(150, 170, 215, 0.35);
-  --fog: rgba(150, 165, 205, 0.1);
-  --fog-near: rgba(0, 0, 0, 0.55);
-  --web: rgba(226, 232, 245, 0);
-  --tendril: #0b0d14;
-  --tendril-edge: rgba(190, 205, 240, 0.16);
-  --particle: 214, 224, 245;
-  --fg: #eef1f6;
-  --mute: rgba(238, 241, 246, 0.62);
-  --accent: #eef1f6;
-  --glow: rgba(180, 196, 235, 0.2);
-  --tendril-reach: 1;
-  --web-on: 0;
-  color-scheme: dark;
+  --base: #05070c;
+  --fg: #eef2f8;
+  --mute: rgba(238, 242, 248, 0.74);
+  --line: rgba(238, 242, 248, 0.45);
+  --shade: 2, 4, 9;
 }
 
 * {
   box-sizing: border-box;
 }
-html,
-body {
-  margin: 0;
-  height: 100%;
-  background: var(--sky-top);
-  color: var(--fg);
+html {
+  background: var(--base);
+  scroll-behavior: smooth;
 }
 body {
+  margin: 0;
+  color: var(--fg);
   font-family: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
   font-stretch: 100%;
+  font-size: 18px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  overflow: hidden;
 }
 :focus-visible {
   outline: 2px solid var(--fg);
-  outline-offset: 6px;
+  outline-offset: 5px;
+}
+:root[data-theme="light"] .by-night,
+:root[data-theme="dark"] .by-day {
+  display: none;
 }
 
 /* ---------- the scene ---------- */
-.scene {
-  position: relative;
-  height: 100svh;
-  min-height: 520px;
-  overflow: hidden;
-  isolation: isolate;
-}
-.scene > * {
-  position: absolute;
-}
-.layer {
-  transform: translate3d(calc(var(--mx, 0) * var(--depth, 0) * -1px), calc(var(--my, 0) * var(--depth, 0) * -0.6px), 0);
-  will-change: transform;
-}
-
-.sky {
-  inset: 0;
-  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 42%, var(--sky-low) 72%, var(--horizon) 100%);
-}
-/* the last of the sun (or the moon behind cloud) sitting low behind the towers */
-.sun {
-  left: 50%;
-  bottom: 8%;
-  width: 120vmax;
-  height: 70vmax;
-  margin-left: -60vmax;
-  background: radial-gradient(closest-side, var(--sun), transparent 70%);
-}
-
-.skyline {
-  inset: 0;
-  pointer-events: none;
-}
-.skyline__row {
-  position: absolute;
-  left: -40px;
-  right: -40px;
-  bottom: -10px;
-  width: calc(100% + 80px);
-  height: 62%;
-}
-.skyline__row:nth-child(2) {
-  height: 50%;
-}
-.skyline__row--near {
-  height: 38%;
-}
-.skyline__windows {
-  opacity: 0.9;
-}
-
-/* ---------- fog ---------- */
-.fog {
-  inset: -10% -20%;
-  pointer-events: none;
-  animation: drift 46s ease-in-out infinite alternate;
-}
-.fog--far {
-  background:
-    radial-gradient(60% 22% at 30% 72%, var(--fog), transparent 70%),
-    radial-gradient(50% 18% at 78% 64%, var(--fog), transparent 70%);
-}
-.fog--near {
-  background:
-    radial-gradient(70% 26% at 60% 100%, var(--fog-near), transparent 70%),
-    radial-gradient(40% 16% at 10% 92%, var(--fog), transparent 70%);
-  animation-duration: 34s;
-  animation-direction: alternate-reverse;
-}
-@keyframes drift {
-  from {
-    transform: translate3d(-4%, 0, 0);
-  }
-  to {
-    transform: translate3d(4%, -1.5%, 0);
-  }
-}
-
-/* ---------- web (Hero only) ---------- */
-.web {
-  top: -2px;
-  left: -2px;
-  width: min(62vmin, 620px);
-  height: auto;
-  fill: none;
-  stroke: var(--web);
-  stroke-width: 1.1;
-  opacity: var(--web-on);
-  transition: opacity 1.6s ease;
-  pointer-events: none;
-}
-
-/* ---------- tendrils ---------- */
-.tendrils {
-  inset: 0;
-  pointer-events: none;
-}
-.tendrils svg {
-  position: absolute;
-  overflow: visible;
-}
-.tendrils__side {
-  top: 0;
-  height: 100%;
-  width: min(42vw, 46vh);
-}
-.tendrils__side--left {
-  left: 0;
-}
-.tendrils__side--right {
-  right: 0;
-  transform: scaleX(-1);
-}
-.tendrils__bottom {
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 26%;
-}
-.tendril {
-  fill: var(--tendril);
-  stroke: var(--tendril-edge);
-  stroke-width: 1.2;
-  /* Hero: the symbiote is only creeping in. Symbiote: it owns the edges. */
-  scale: var(--tendril-reach);
-  transition: scale 2.4s cubic-bezier(0.6, 0, 0.2, 1), fill 1s;
-  animation: sway 9s ease-in-out infinite alternate;
-}
-/* the left side stays thinner in Hero mode so the frame is lopsided: the dark side is to the right */
-.tendrils__side--left .tendril {
-  scale: calc(var(--tendril-reach) * 0.8);
-}
-@keyframes sway {
-  from {
-    rotate: -2.5deg;
-  }
-  to {
-    rotate: 2.5deg;
-  }
-}
-
-.particles {
+.city {
+  position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none;
+  display: block;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 1.2s ease;
 }
-.vignette {
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+.city--ready {
+  opacity: 1;
 }
 
-/* ---------- words ---------- */
+/* one fixed shade over the picture: bottom and sides, where the words sit. Fixed, so no seams while scrolling. */
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(0deg, rgba(var(--shade), 0.62) 0%, rgba(var(--shade), 0.2) 30%, transparent 50%),
+    linear-gradient(90deg, rgba(var(--shade), 0.5) 0%, transparent 46%),
+    linear-gradient(270deg, rgba(var(--shade), 0.34) 0%, transparent 40%);
+}
+
+/* ---------- top bar ---------- */
 .top {
+  position: fixed;
+  z-index: 5;
   top: env(safe-area-inset-top, 0px);
   left: 0;
   right: 0;
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  padding: 22px max(24px, env(safe-area-inset-right, 0px)) 0 max(24px, env(safe-area-inset-left, 0px));
-  font-size: 13px;
+  align-items: center;
+  padding: 20px max(28px, env(safe-area-inset-right, 0px)) 0 max(28px, env(safe-area-inset-left, 0px));
+  font-size: 14px;
   color: var(--mute);
-  z-index: 5;
+  text-shadow: 0 1px 12px rgba(var(--shade), 0.7);
 }
 .top__mark {
   font-weight: 800;
   font-stretch: 125%;
-  font-size: 15px;
-  letter-spacing: 0.02em;
+  font-size: 17px;
   color: var(--fg);
+  text-decoration: none;
+}
+.top__right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
 }
 .top__clock {
   font-variant-numeric: tabular-nums;
 }
 
-.hero {
-  left: max(24px, env(safe-area-inset-left, 0px));
-  right: max(24px, env(safe-area-inset-right, 0px));
-  bottom: calc(max(28px, env(safe-area-inset-bottom, 0px)) + 2vh);
-  z-index: 4;
-  pointer-events: none;
+/* ---------- theme switch ---------- */
+.switch {
+  position: relative;
+  flex: none;
+  width: 60px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+  background: rgba(var(--shade), 0.5);
+  color: var(--fg);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
-.hero__title {
+.switch::before {
+  /* a bigger tap area than the 32px track */
+  content: "";
+  position: absolute;
+  inset: -8px;
+}
+.switch__icon {
+  width: 15px;
+  height: 15px;
+  margin: 0 6px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.switch__knob {
+  position: absolute;
+  top: 2.5px;
+  left: 2.5px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--fg);
+  /* covers the moon by day, slides over the sun at night */
+  translate: 28px 0;
+  transition: translate 0.25s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+:root[data-theme="dark"] .switch__knob {
+  translate: 0 0;
+}
+
+/* ---------- shots: one screen of words per stretch of the flight ---------- */
+main {
+  position: relative;
+  z-index: 1;
+}
+.shot {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  align-items: flex-end;
+  padding: 96px max(28px, env(safe-area-inset-right, 0px)) clamp(40px, 8svh, 84px) max(28px, env(safe-area-inset-left, 0px));
+}
+.shot__text {
+  max-width: 34rem;
+}
+.shot h2 {
+  margin: 0 0 18px;
+  font-weight: 800;
+  font-stretch: 118%;
+  font-size: clamp(34px, 4.6vw, 68px);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.shot p {
+  margin: 0;
+  color: var(--mute);
+  text-wrap: pretty;
+}
+.shot h2,
+.shot p,
+.title {
+  text-shadow: 0 1px 3px rgba(var(--shade), 0.5), 0 0 22px rgba(var(--shade), 0.75);
+}
+
+.shot--open .shot__text {
+  max-width: none;
+}
+.title {
   margin: 0;
   display: grid;
   font-weight: 900;
   font-stretch: 125%;
   text-transform: uppercase;
-  font-size: clamp(40px, min(8.4vw, 13svh), 150px);
+  font-size: clamp(38px, min(8.2vw, 13svh), 148px);
   line-height: 0.9;
-  letter-spacing: -0.015em;
-  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.35);
+  letter-spacing: -0.02em;
 }
-/* Hero: the second line is only an outline. Symbiote: it fills in. */
-.hero__line--outline {
-  color: transparent;
-  -webkit-text-stroke: 1.5px var(--fg);
-  text-shadow: none;
-  transition: color 1.6s ease;
+.lede {
+  margin-top: 20px !important;
+  font-size: clamp(17px, 1.5vw, 21px);
 }
-:root[data-theme="dark"] .hero__line--outline {
-  color: var(--fg);
+.cue {
+  position: absolute;
+  right: max(28px, env(safe-area-inset-right, 0px));
+  bottom: clamp(40px, 8svh, 84px);
+  font-size: 14px;
+  padding-bottom: 46px;
 }
-.hero__sub {
-  margin: 18px 0 0;
-  font-size: clamp(15px, 1.4vw, 19px);
-  font-weight: 400;
-  color: var(--mute);
-}
-
-.hero__orb {
-  z-index: 6;
-  right: clamp(24px, 9vw, 180px);
-  top: 50%;
-  translate: 0 -62%;
-}
-.orb {
-  display: grid;
-  justify-items: center;
-  gap: 14px;
-}
-.orb::before {
-  /* light pooling behind the orb: red at dusk, cold at night */
+.cue::after {
+  /* a plumb line that falls, pointing the way down */
   content: "";
   position: absolute;
-  z-index: -1;
-  top: 50%;
-  left: 50%;
-  width: 190%;
-  aspect-ratio: 1;
-  translate: -50% -58%;
-  background: radial-gradient(closest-side, var(--glow), transparent 72%);
-  pointer-events: none;
+  right: 0;
+  bottom: 0;
+  width: 1.5px;
+  height: 36px;
+  background: var(--fg);
+  transform-origin: top;
+  animation: fall 2.4s cubic-bezier(0.6, 0, 0.2, 1) infinite;
 }
-.orb__button {
-  position: relative;
-  width: clamp(170px, 30vmin, 340px);
-  aspect-ratio: 1;
-  padding: 0;
+@keyframes fall {
+  0% {
+    scale: 1 0;
+    opacity: 1;
+  }
+  60% {
+    scale: 1 1;
+    opacity: 1;
+  }
+  100% {
+    scale: 1 1;
+    opacity: 0;
+  }
+}
+
+.shot--left {
+  align-items: center;
+}
+.shot--right {
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.flip {
+  margin-top: 30px;
+  padding: 15px 26px;
   border: 0;
-  border-radius: 50%;
-  background: none;
+  border-radius: 2px;
+  background: var(--fg);
+  color: #0b0d12;
+  font: inherit;
+  font-weight: 700;
+  font-size: 16px;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.2s, translate 0.2s;
 }
-.orb__canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
+.flip:hover {
+  translate: 0 -2px;
 }
-.orb__button--flat {
-  background: radial-gradient(circle at 35% 30%, #3a3f52, #050507 55%);
-  box-shadow: 0 0 0 1px var(--tendril-edge);
+.flip:active {
+  translate: 0 0;
 }
-.orb__caption {
-  margin: 0;
-  display: grid;
-  justify-items: center;
-  gap: 4px;
-  text-align: center;
+
+.shot--close {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 48px;
 }
-.orb__mode {
-  font-weight: 800;
+.shot--close .shot__text {
+  max-width: none;
+}
+.wordmark {
+  font-weight: 900;
   font-stretch: 125%;
   text-transform: uppercase;
-  font-size: 14px;
-  letter-spacing: 0.08em;
-  color: var(--fg);
+  font-size: clamp(84px, 21vw, 380px);
+  line-height: 0.8;
+  letter-spacing: -0.03em;
+  color: var(--fg) !important;
+  margin-left: -0.04em !important;
 }
-.orb__hint {
-  font-size: 13px;
+.foot {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px 24px;
+  flex-wrap: wrap;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
   color: var(--mute);
+}
+.foot a {
+  color: var(--fg);
+  text-underline-offset: 4px;
+}
+
+/* the scroll cue needs room beside the headline */
+@media (max-width: 1100px) {
+  .cue {
+    display: none;
+  }
 }
 
 /* ---------- phones ---------- */
 @media (max-width: 760px) {
-  .hero__orb {
-    right: auto;
-    left: 50%;
-    top: 40%;
-    translate: -50% -50%;
+  body {
+    font-size: 17px;
   }
-  .orb__button {
-    width: min(56vw, 34svh);
+  .top {
+    padding-left: 20px;
+    padding-right: 20px;
   }
-  .hero__title {
-    font-size: clamp(34px, 11.4vw, 64px);
+  .shot {
+    padding-left: 20px;
+    padding-right: 20px;
+    align-items: flex-end;
   }
-  .tendrils__side {
-    width: 34vw;
+  .title {
+    font-size: clamp(32px, 10.6vw, 64px);
   }
-}
-@media (max-height: 560px) and (orientation: landscape) {
-  .orb__button {
-    width: 44svh;
+  .veil {
+    background: linear-gradient(0deg, rgba(var(--shade), 0.86) 0%, rgba(var(--shade), 0.5) 38%, transparent 70%);
+  }
+  .shot--right {
+    justify-content: flex-start;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fog,
-  .tendril {
-    animation: none;
+  html {
+    scroll-behavior: auto;
   }
-  .layer {
-    transform: none;
+  .city,
+  .switch__knob,
+  .flip {
+    transition: none;
+  }
+  .cue::after {
+    animation: none;
+    scale: 1 1;
   }
 }
 

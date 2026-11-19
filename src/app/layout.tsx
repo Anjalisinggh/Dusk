@@ -3,7 +3,7 @@ import { Archivo } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
-// one family, two jobs: extra-wide black for the headline, normal width for the small text
+// one family, two jobs: extra-wide and heavy for headings, normal width for reading
 const archivo = Archivo({
   variable: "--font-archivo",
   subsets: ["latin"],
@@ -12,11 +12,11 @@ const archivo = Archivo({
 
 export const metadata: Metadata = {
   title: "Dusk",
-  description: "Two sides. One identity. A rooftop at dusk, and the thing that comes out after dark.",
+  description: "Two sides. One identity. One city at 7:42 in the evening and at 3:12 in the morning.",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0f1838",
+  themeColor: "#0a0d14",
   viewportFit: "cover",
 };
 
